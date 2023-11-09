@@ -1,3 +1,6 @@
+import math
+
+
 class Value:
     def __init__(self, data, _children=(), name=None):
         assert isinstance(data, (float, int))
@@ -61,24 +64,36 @@ class Value:
 
     def __rsub__(self, other):
         """other - self"""
-        return other + -self
+        return -self + other
+
+    def __radd__(self, other):
+        """other + self"""
+        return self + other
+
+    def __rmul__(self, other):
+        """other * self"""
+        return self * other
 
     def __rtruediv__(self, other):
         """other / self"""
         return other * self ** -1
 
-    def backward(self):
+    def topo_sort(self):
         topo_sorted = []
         seen = set()
 
-        def topo_sort(v):
+        def _topo_sort(v):
             if v not in seen:
                 seen.add(v)
                 topo_sorted.append(v)
                 for child in v._children:
-                    topo_sort(child)
+                    _topo_sort(child)
 
-        topo_sort(self)
+        _topo_sort(self)
+        return topo_sorted
+
+    def backward(self):
+        topo_sorted = self.topo_sort()
 
         self.grad = 1.0
         for v in topo_sorted:
@@ -98,3 +113,14 @@ class Value:
 
     def __hash__(self):
         return hash(id(self))
+
+
+def exp(x: Value):
+    v = Value(math.exp(x.data), _children=(x,))
+
+    def _backward():
+        x.grad += math.exp(x.data)
+
+    v._backward = _backward
+
+    return v

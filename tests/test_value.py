@@ -1,8 +1,10 @@
+import math
 from typing import Literal
 
+import numpy as np
 import torch
 
-from nn.value import Value
+from nn.value import Value, exp
 
 
 def test_basics():
@@ -12,6 +14,12 @@ def test_basics():
     assert x - 1 == 1
     assert x ** 2 == 4
     assert x / 2 == 1.0
+
+    assert 1 + x == 3
+    assert 1 - x == -1
+    assert 2 / x == 1
+
+    assert exp(x).data == math.exp(x.data)
 
 
 def test_backward():
@@ -24,8 +32,10 @@ def test_backward():
         """
         if backend == 'Value':
             f = Value
+            exp_ = exp
         elif backend == 'torch':
             f = torch.tensor
+            exp_ = torch.exp
         else:
             raise ValueError(f'{backend} is invalid')
 
@@ -33,10 +43,11 @@ def test_backward():
         parameters = [x1, x2, w1, w2]
 
         for p in parameters:
+            # only for torch
             p.requires_grad = True
 
         # forward
-        y = x1 * w1 + x2 * w2 - x1**2 + w1*w2
+        y = x1 * w1 + x2 * w2 - x1**2 + w1*w2 + exp_(x1)
 
         # zero
         for p in parameters:
@@ -49,4 +60,4 @@ def test_backward():
     x1, x2 = 5., -1.
     w1, w2 = .1, .04
 
-    assert _get_grads(x1, x2, w1, w2, 'torch') == _get_grads(x1, x2, w1, w2, 'Value')
+    assert np.isclose(_get_grads(x1, x2, w1, w2, 'Value') , _get_grads(x1, x2, w1, w2, 'torch')).all()
