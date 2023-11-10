@@ -1,4 +1,5 @@
 import math
+from typing import List
 
 
 class Value:
@@ -94,6 +95,18 @@ class Value:
 
     def backward(self):
         topo_sorted = self.topo_sort()
+        # topo = []
+        # visited = set()
+        #
+        # def build_topo(v):
+        #     if v not in visited:
+        #         visited.add(v)
+        #         for child in v._children:
+        #             build_topo(child)
+        #         topo.append(v)
+        #
+        # build_topo(self)
+
 
         self.grad = 1.0
         for v in topo_sorted:
@@ -119,8 +132,24 @@ def exp(x: Value):
     v = Value(math.exp(x.data), _children=(x,))
 
     def _backward():
-        x.grad += math.exp(x.data)
+        x.grad += math.exp(x.data) * v.grad
 
     v._backward = _backward
 
     return v
+
+
+def log(x: Value):
+    """log(x)"""
+    v = Value(math.log(x.data), _children=(x,))
+
+    def _backward():
+        x.grad += 1 / x.data * math.log(math.e) * v.grad
+
+    v._backward = _backward
+
+    return v
+
+
+def softmax(x: List[Value]):
+    return [exp(x_) / sum(exp(x__) for x__ in x) for x_ in x]
