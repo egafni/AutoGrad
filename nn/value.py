@@ -129,7 +129,7 @@ class Value:
 
 
 def exp(x: Value):
-    raise NotImplementedError('Unknown bugs occur proporgated gradients when there is nested composition of this method')
+    raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
     v = Value(math.exp(x.data), _children=(x,))
 
     def _backward():
@@ -141,7 +141,7 @@ def exp(x: Value):
 
 
 def log(x: Value):
-    raise NotImplementedError('Unknown bugs occur proporgated gradients when there is nested composition of this method')
+    raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
     """log(x)"""
     v = Value(math.log(x.data), _children=(x,))
 
