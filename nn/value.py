@@ -80,33 +80,21 @@ class Value:
         return other * self ** -1
 
     def topo_sort(self):
-        topo_sorted = []
-        seen = set()
+        topo = []
+        visited = set()
 
-        def _topo_sort(v):
-            if v not in seen:
-                seen.add(v)
-                topo_sorted.append(v)
+        def build_topo(v):
+            if v not in visited:
+                visited.add(v)
                 for child in v._children:
-                    _topo_sort(child)
+                    build_topo(child)
+                topo.append(v)
 
-        _topo_sort(self)
-        return topo_sorted
+        build_topo(self)
+        return list(reversed(topo))
 
     def backward(self):
         topo_sorted = self.topo_sort()
-        # topo = []
-        # visited = set()
-        #
-        # def build_topo(v):
-        #     if v not in visited:
-        #         visited.add(v)
-        #         for child in v._children:
-        #             build_topo(child)
-        #         topo.append(v)
-        #
-        # build_topo(self)
-
 
         self.grad = 1.0
         for v in topo_sorted:
@@ -129,7 +117,7 @@ class Value:
 
 
 def exp(x: Value):
-    raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
+    # raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
     v = Value(math.exp(x.data), _children=(x,))
 
     def _backward():
@@ -141,7 +129,7 @@ def exp(x: Value):
 
 
 def log(x: Value):
-    raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
+    # raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
     """log(x)"""
     v = Value(math.log(x.data), _children=(x,))
 
@@ -153,5 +141,5 @@ def log(x: Value):
     return v
 
 
-def softmax(x: List[Value]):
-    return [exp(x_) / sum(exp(x__) for x__ in x) for x_ in x]
+def tanh(x: Value):
+    return 2 / (1 + exp(-2 * x)) - 1

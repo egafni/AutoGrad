@@ -4,7 +4,8 @@ from typing import Literal
 import numpy as np
 import torch
 
-from nn.value import Value, exp, log
+from nn.module import Softmax
+from nn.value import Value, exp, log, tanh
 
 
 def test_basics():
@@ -24,12 +25,21 @@ def test_basics():
     assert log(x).data == math.log(x.data)
 
 
+def test_softmax_tanh():
+    x = [Value(2.0), Value(1.0), Value(-2.0)]
+    x2 = torch.tensor([2.0, 1.0, -2])
+
+    assert (torch.tensor([tanh(x_).data for x_ in x]) == torch.tanh(x2)).all()
+    a = torch.tensor([x_.data for x_ in Softmax()(x)])
+    assert np.isclose(a, torch.softmax(x2, dim=0)).all()
+
+
 def test_exp():
     def a():
         x1 = torch.tensor(5., requires_grad=True)
         x2 = torch.tensor(3., requires_grad=True)
         x3 = torch.exp(x1 + x2)
-        x3 = x3*4
+        x3 = x3 * 4
         x3.backward()
         return x1.grad.item(), x2.grad.item()
 
@@ -37,7 +47,7 @@ def test_exp():
         x1 = Value(5.)
         x2 = Value(3.)
         x3 = exp(x1 + x2)
-        x3 = x3*4
+        x3 = x3 * 4
         x3.backward()
         return x1.grad, x2.grad
 
@@ -72,7 +82,7 @@ def test_backward():
 
         # forward
         y = x1 * w1 + x2 * w2 - x1 ** 2 + w1 * w2 + exp_(x1) + log_(x1)
-        # y = log_(y) + exp_(y)  # this breaks things!
+        y = log_(y) + exp_(y)
 
         # zero
         for p in parameters:

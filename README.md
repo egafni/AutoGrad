@@ -3,10 +3,7 @@ Neural Nets from Scratch
 
 Notable differences from Karpathy's implementation
 
-* topo sort is slightly optimized
-* implemented differentiable exp() function
-* implemented differentiable tanh
-* implemented softmax
+* implemented differentiable exp, softmax and tanh
 
 
 # Install

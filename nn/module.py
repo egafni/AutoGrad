@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import List
 
-from nn.value import exp, Value
+from nn.value import Value, tanh, exp
 
 INFERENCE = False
 
@@ -25,6 +25,7 @@ class BatchNorm(Module):
     """needs checking"""
 
     def __init__(self, ):
+        raise NotImplementedError('i have not double checked this')
         self.running_mean = None
         self.running_std = None
         self._parameters = None
@@ -90,7 +91,18 @@ class Tanh(Module):
         self._parameters = []
 
     def __call__(self, x):
-        return [(exp(2 * x_) - 1) / (exp(2 * x_) + 1) for x_ in x]
+        return [tanh(x_) for x_ in x]
+
+
+@dataclass
+class Softmax(Module):
+    def __init__(self):
+        self._parameters = []
+
+    def __call__(self, x):
+        m = max(x_.data for x_ in x)
+        denom = sum(exp(x_ - m) for x_ in x)
+        return [exp(x_ - m) / denom for x_ in x]
 
 
 @dataclass
@@ -111,7 +123,10 @@ class MLP(Module):
     def parameters(self):
         return [p for layer in self.layers for p in layer.parameters()]
 
-    def __call__(self, X):
+    def __call__(self, x):
+        """
+        Note this class expects X to be batches of data
+        """
         for layer in self.layers:
-            X = [layer(x_) for x_ in X]
-        return X
+            x = layer(x)
+        return x
