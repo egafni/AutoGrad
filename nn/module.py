@@ -21,30 +21,6 @@ class Module:
         return self._parameters
 
 
-class BatchNorm(Module):
-    """needs checking"""
-
-    def __init__(self, ):
-        raise NotImplementedError('i have not double checked this')
-        self.running_mean = None
-        self.running_std = None
-        self._parameters = None
-
-    def __call__(self, x):
-        mean = x.mean(0, keepdims=True)
-        std = x.std(0, keepdims=True)
-
-        if INFERENCE or self.running_mean is None:
-            mean = self.running_mean
-            std = self.running_std
-        else:
-            self.running_mean = self.running_mean * .999 + mean * .01
-            self.running_std = self.running_std * .999 + std * .01
-
-        x = [x - mean / std]
-        return x
-
-
 @dataclass
 class Neuron(Module):
     n_in: int
@@ -129,4 +105,31 @@ class MLP(Module):
         """
         for layer in self.layers:
             x = layer(x)
+        return x
+
+
+class BatchNorm(Module):
+    """needs checking"""
+
+    def __init__(self, ):
+        raise NotImplementedError('i have not double checked this')
+        # TODO: add learnable parameters for gain/bias
+
+        self.running_mean = None
+        self.running_std = None
+        self._parameters = None
+
+    def __call__(self, x):
+        mean = x.mean(0, keepdims=True)
+        std = x.std(0, keepdims=True)
+
+        if INFERENCE or self.running_mean is None:
+            mean = self.running_mean
+            std = self.running_std
+        else:
+            self.running_mean = self.running_mean * .999 + mean * .01
+            self.running_std = self.running_std * .999 + std * .01
+
+        # fixme "vectorize"
+        x = [x - mean / std]
         return x
