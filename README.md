@@ -1,10 +1,6 @@
 # NN
-Neural Nets from Scratch
 
-Notable differences from Karpathy's implementation
-
-* implemented differentiable exp, softmax and tanh
-
+Implemented a basic version of torch.autograd and torch.nn
 
 # Install
 
