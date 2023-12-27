@@ -1,3 +1,4 @@
+import math
 import random
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -26,7 +27,7 @@ class Neuron(Module):
     n_in: int
 
     def __post_init__(self):
-        self.w = [Value(random.random() * 2 - 1, name='w') for _ in range(self.n_in)]
+        self.w = [Value(random.uniform(-1, 1)/math.sqrt(self.n_in), name='w') for _ in range(self.n_in)]
         self.b = Value(0)
 
     def __call__(self, x):
@@ -77,8 +78,8 @@ class Softmax(Module):
 
     def __call__(self, x):
         m = max(x_.data for x_ in x)
-        denom = sum(exp(x_ - m) for x_ in x)
-        return [exp(x_ - m) / denom for x_ in x]
+        denom = sum(exp(x_) for x_ in x)
+        return [exp(x_) / denom for x_ in x]
 
 
 @dataclass

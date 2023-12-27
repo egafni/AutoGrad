@@ -1,7 +1,8 @@
 import math
+from typing import List
 
 
-class Value:
+class Tensor:
     def __init__(self, data, _children=(), name=None):
         assert isinstance(data, (float, int))
 
@@ -13,10 +14,10 @@ class Value:
         self.grad = 0.0
 
     def __add__(self, other):
-        if not isinstance(other, Value):
-            other = Value(other)
+        if not isinstance(other, Tensor):
+            other = Tensor(other)
 
-        v = Value(self.data + other.data, _children=(self, other))
+        v = Tensor(self.data + other.data, _children=(self, other))
 
         def _backward():
             self.grad += 1 * v.grad
@@ -27,10 +28,10 @@ class Value:
         return v
 
     def __mul__(self, other):
-        if not isinstance(other, Value):
-            other = Value(other)
+        if not isinstance(other, Tensor):
+            other = Tensor(other)
 
-        v = Value(self.data * other.data, _children=(self, other))
+        v = Tensor(self.data * other.data, _children=(self, other))
 
         def _backward():
             self.grad += other.data * v.grad
@@ -42,10 +43,10 @@ class Value:
 
     def __pow__(self, other):
         assert isinstance(other, (int, float))
-        v = Value(self.data ** other, _children=(self,))
+        v = Tensor(self.data ** other, _children=(self,))
 
         def _backward():
-            self.grad += other * self.data ** (other - 1) * v.grad
+            self.grad += (other * self.data) ** (other - 1) * v.grad
 
         v._backward = _backward
 
@@ -101,12 +102,12 @@ class Value:
 
     def __repr__(self):
         if self.name:
-            return f'Value({self.name}={self.data}, grad={self.grad})'
+            return f'Tensor({self.name}={self.data}, grad={self.grad})'
         else:
-            return f'Value({self.data}, grad={self.grad})'
+            return f'Tensor({self.data}, grad={self.grad})'
 
     def __eq__(self, other):
-        if isinstance(other, Value):
+        if isinstance(other, Tensor):
             return self.data == other.data
         else:
             return self.data == other
@@ -115,9 +116,9 @@ class Value:
         return hash(id(self))
 
 
-def exp(x: Value):
+def exp(x: Tensor):
     # raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
-    v = Value(math.exp(x.data), _children=(x,))
+    v = Tensor(math.exp(x.data), _children=(x,))
 
     def _backward():
         x.grad += math.exp(x.data) * v.grad
@@ -127,10 +128,10 @@ def exp(x: Value):
     return v
 
 
-def log(x: Value):
+def log(x: Tensor):
     # raise NotImplementedError('Unknown bugs occur propagating gradients when there is nested composition of this method')
     """log(x)"""
-    v = Value(math.log(x.data), _children=(x,))
+    v = Tensor(math.log(x.data), _children=(x,))
 
     def _backward():
         x.grad += 1 / x.data * math.log(math.e) * v.grad
@@ -140,5 +141,5 @@ def log(x: Value):
     return v
 
 
-def tanh(x: Value):
+def tanh(x: Tensor):
     return 2 / (1 + exp(-2 * x)) - 1
