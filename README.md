@@ -1,4 +1,4 @@
-# NN
+# Autograd
 
 Implemented a basic version of torch.autograd and torch.nn
 See notebooks
